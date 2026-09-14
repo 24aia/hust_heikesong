@@ -5,11 +5,12 @@ node_modules/
 dist/
 
 # Mozilla 签名包作为 GitHub Release 附件发布，不进入 Git 历史
+/*.xpi
 release/*.xpi
 
 # 密钥与本地配置：任何真实凭证都不进仓库
 API-key/
-资料/知乎直答/API-key.md
+资料/知乎直答/API-key*.md
 .env
 .env.*
 !.env.example
