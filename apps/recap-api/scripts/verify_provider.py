@@ -15,6 +15,7 @@ from app.validation.result import validate_recap_result
 async def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--show-result", action="store_true")
+    parser.add_argument("--mode", choices=("brief", "bridge"), default="brief")
     args = parser.parse_args()
     secret = os.environ.get("ZHIHU_ACCESS_SECRET", "").strip()
     if not secret:
@@ -25,7 +26,7 @@ async def main() -> None:
         "title": "续读助手原创验证材料",
         "sourceUrl": "https://example.invalid/provider-verification",
         "inputHash": "0" * 64,
-        "mode": "brief",
+        "mode": args.mode,
         "cutoff": {"anchorKind": "manual", "policy": "before-paragraph"},
         "coverage": "prefix-to-cutoff",
         "paragraphs": [
@@ -57,6 +58,9 @@ async def main() -> None:
                 "summaryVersion": validated.summary_version,
                 "itemCount": len(validated.items),
                 "allEvidenceValidated": True,
+                "bridgePresent": validated.bridge is not None,
+                "bridgeHasText": bool(validated.bridge and validated.bridge.text.strip()),
+                "bridgeEvidenceCount": len(validated.bridge.evidence) if validated.bridge else 0,
             }
         )
 

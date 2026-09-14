@@ -11,9 +11,15 @@ def build_recap_prompt(recap_input: RecapInput, summary_version: str) -> str:
         for paragraph in recap_input.paragraphs
     ]
     bridge_instruction = (
-        "bridge 必须为一个帮助读者接回论证的短段落，并带 evidence。"
+        "bridge 必须是 JSON 对象，且只能包含 text 与 evidence：text 是帮助读者接回前文论证的非空短段落，"
+        "evidence 至少包含一条逐字引用。bridge 不得为 null、字符串或数组，不得把 text 改名为 summary、content 等其他字段。"
         if recap_input.mode.value == "bridge"
         else "bridge 必须为 null。"
+    )
+    bridge_example = (
+        '{"text":"衔接说明","evidence":[{"paragraphId":"p1","quote":"原文连续文本"}]}'
+        if recap_input.mode.value == "bridge"
+        else "null"
     )
     return f"""你是长文续读回顾器。只根据 MATERIAL 总结断点之前的内容。
 
@@ -31,7 +37,7 @@ def build_recap_prompt(recap_input: RecapInput, summary_version: str) -> str:
   "inputHash": {json.dumps(recap_input.input_hash)},
   "summaryVersion": {json.dumps(summary_version)},
   "items": [{{"text": "要点", "evidence": [{{"paragraphId": "p1", "quote": "原文连续文本"}}]}}],
-  "bridge": null,
+  "bridge": {bridge_example},
   "warnings": []
 }}
 

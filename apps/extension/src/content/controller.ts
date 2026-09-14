@@ -168,7 +168,9 @@ export class ReadingController {
   beginManualBookmark(): void {
     this.tracker?.pause();
     this.selector?.stop();
-    this.update({ phase: "selecting", open: false, message: "点击正文段落保存，Esc 取消" });
+    // 面板必须保持打开：操作说明与失败原因都写在 state.message 里，
+    // 而 message 只在面板内渲染。关闭面板会让选择模式完全没有可见反馈。
+    this.update({ phase: "selecting", open: true, message: "点击正文段落保存，Esc 取消" });
     this.selector = new ManualBookmarkSelector(
       this.snapshot.paragraphs,
       (_paragraph, index) => void this.saveManual(index),

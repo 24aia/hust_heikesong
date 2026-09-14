@@ -2,6 +2,8 @@ import type { ReadingCheckpoint } from "@contracts/types";
 import type { ReadingSettings, RuntimeRequest, RuntimeResponse } from "../shared/runtime";
 import { checkpointStorageKey } from "../shared/runtime";
 import { browserApi } from "../shared/browser-api";
+import { ReadingError } from "../shared/errors";
+import { generateRecap } from "./recap-provider";
 
 const writeQueues = new Map<string, Promise<unknown>>();
 const supportedSender = /^https:\/\/(www\.zhihu\.com\/question\/[^/]+\/answer\/[^/?#]+|zhuanlan\.zhihu\.com\/p\/[^/?#]+)/;
@@ -79,6 +81,10 @@ async function handle(request: RuntimeRequest): Promise<RuntimeResponse> {
       await browserApi.storage.local.remove(keys);
       return { ok: true };
     }
+    case "LKS_RECAP_GENERATE": {
+      const result = await generateRecap(request.input);
+      return { ok: true, value: result };
+    }
     default:
       return { ok: false, error: { code: "INVALID_MESSAGE", message: "未知扩展消息" } };
   }
@@ -92,6 +98,15 @@ browserApi.runtime.onMessage.addListener((request: RuntimeRequest, sender, sendR
   handle(request)
     .then(sendResponse)
     .catch((error: unknown) => {
+      // 保留 ReadingError 的真实错误码：回顾面板按 code 显示不同标题，
+      // 一律回退成 STORAGE_ERROR 会让额度耗尽、限速、引用校验失败都显示为存储错误。
+      if (error instanceof ReadingError) {
+        sendResponse({
+          ok: false,
+          error: { code: error.code, message: error.message, requestId: error.requestId },
+        } satisfies RuntimeResponse);
+        return;
+      }
       const message = error instanceof Error ? error.message : "本地存储失败";
       sendResponse({ ok: false, error: { code: "STORAGE_ERROR", message } } satisfies RuntimeResponse);
     });

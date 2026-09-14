@@ -5,6 +5,7 @@ import { companionStyles } from "../mascot/styles";
 import { ZhihuPageAdapter } from "../page-adapter/zhihu-page-adapter";
 import { ExtensionReadingStore } from "../storage/storage";
 import { ReadingController } from "./controller";
+import recapPanelStyles from "../../../../packages/recap-ui/src/panel/panel.css?inline";
 
 const HOST_ID = "liukanshan-reading-companion";
 let controller: ReadingController | null = null;
@@ -40,7 +41,9 @@ async function mount(): Promise<void> {
   const shadow = host.shadowRoot ?? host.attachShadow({ mode: "open" });
   if (!reactRoot) {
     const style = document.createElement("style");
-    style.textContent = companionStyles;
+    // Vite 的普通 CSS import 会抽出独立文件，无法跨越 Shadow DOM 边界。
+    // ?inline 是 Vite 原生能力，保证回顾面板样式随 content script 注入同一 shadow root。
+    style.textContent = [companionStyles, recapPanelStyles].join("\n");
     const mountPoint = document.createElement("div");
     shadow.append(style, mountPoint);
     reactRoot = createRoot(mountPoint);

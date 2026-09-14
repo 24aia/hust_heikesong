@@ -1,7 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { ReadingCheckpoint } from "@contracts/types";
+import { RecapPanel } from "@liukanshan/recap-ui";
 import type { ControllerState, ReadingController } from "../content/controller";
 import { browserApi } from "../shared/browser-api";
+import { ExtensionCacheStore } from "../storage/cache-store";
+import { ZhihuRecapClient } from "../transport/zhihu-recap-client";
+import { SUMMARY_VERSION } from "../recap/version";
 
 function formatCheckpoint(checkpoint: ReadingCheckpoint | null): string {
   if (!checkpoint) return "暂无记录";
@@ -10,7 +14,20 @@ function formatCheckpoint(checkpoint: ReadingCheckpoint | null): string {
 
 export function ReaderCompanion({ controller }: { controller: ReadingController }) {
   const [state, setState] = useState<ControllerState>(controller.getState());
+  const [recapOpen, setRecapOpen] = useState(false);
   useEffect(() => controller.subscribe(setState), [controller]);
+
+  // 回顾面板的依赖只建一次：client 与 cache 无状态，host 由控制器持有。
+  const recapDependencies = useMemo(
+    () => ({
+      host: controller.host,
+      client: new ZhihuRecapClient(),
+      cache: new ExtensionCacheStore(),
+      summaryVersion: SUMMARY_VERSION,
+      onClose: () => setRecapOpen(false),
+    }),
+    [controller],
+  );
 
   if (state.collapsed) {
     return (
@@ -49,7 +66,7 @@ export function ReaderCompanion({ controller }: { controller: ReadingController 
               {state.phase === "offer-resume" || state.phase === "restore-failed" ? (
                 <div className="actions">
                   <button className="primary" type="button" onClick={() => void controller.restore()}>继续阅读</button>
-                  <button type="button" onClick={() => void controller.inspectRecapBoundary()}>回顾后继续</button>
+                  <button type="button" onClick={() => setRecapOpen(true)}>回顾后继续</button>
                   <button type="button" onClick={() => controller.ignoreResume()}>暂不恢复</button>
                 </div>
               ) : state.phase === "restoring" ? (
@@ -57,7 +74,7 @@ export function ReaderCompanion({ controller }: { controller: ReadingController 
               ) : (
                 <div className="actions">
                   <button className="primary" type="button" onClick={() => controller.beginManualBookmark()}>记住这里</button>
-                  <button type="button" onClick={() => void controller.inspectRecapBoundary()} disabled={!active}>回顾到这里</button>
+                  <button type="button" onClick={() => setRecapOpen(true)} disabled={!active}>回顾到这里</button>
                 </div>
               )}
             </div>
@@ -76,6 +93,7 @@ export function ReaderCompanion({ controller }: { controller: ReadingController 
           )}
         </section>
       )}
+      {recapOpen && <RecapPanel {...recapDependencies} />}
       <button className="mascot" type="button" aria-label="打开刘看山阅读伙伴" aria-expanded={state.open} onClick={() => controller.toggleOpen()}>
         <img src={browserApi.runtime.getURL("assets/mascot.svg")} alt="" />
       </button>

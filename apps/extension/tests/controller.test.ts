@@ -98,6 +98,54 @@ describe("ReadingController initialization", () => {
     controller.dispose();
   });
 
+  it("allows saving a manual bookmark while the resume offer is still visible", async () => {
+    const location = setPage(
+      "https://zhuanlan.zhihu.com/p/14",
+      `<article><div itemprop="articleBody"><p>页面顶部。</p><p>自动断点。</p><p>想要手动标记的段落。</p></div></article>`,
+    );
+    const adapter = new ZhihuPageAdapter(document, location);
+    const snapshot = adapter.extractSnapshot();
+    setRects(snapshot.paragraphs.map(({ element }) => element), [120, 420, 720]);
+    const store = new MemoryReadingStore();
+    await store.setSettings({ enabled: true, mascotCollapsed: false });
+    await store.saveCheckpoint(createCheckpoint(adapter, snapshot, 1, "automatic"));
+    const controller = new ReadingController(adapter, store, snapshot);
+    await controller.initialize();
+    expect(controller.getState().phase).toBe("offer-resume");
+
+    controller.beginManualBookmark();
+    // 面板必须保持打开，否则“点击正文段落保存，Esc 取消”这条说明不可见，
+    // 用户会以为按钮没有反应。
+    expect(controller.getState()).toMatchObject({ phase: "selecting", open: true });
+    snapshot.paragraphs[2].element.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    await vi.waitFor(() => expect(controller.getState().manual).not.toBeNull());
+
+    expect(controller.getState().manual?.anchor.quote).toBe("想要手动标记的段落。");
+    expect((await store.getCheckpoint("article:14", "automatic"))?.anchor.quote).toBe("自动断点。");
+    controller.dispose();
+  });
+
+  it("keeps the resume offer on screen after inspecting the recap boundary", async () => {
+    const location = setPage(
+      "https://zhuanlan.zhihu.com/p/15",
+      `<article><div itemprop="articleBody"><p>页面顶部。</p><p>自动断点。</p></div></article>`,
+    );
+    const adapter = new ZhihuPageAdapter(document, location);
+    const snapshot = adapter.extractSnapshot();
+    const store = new MemoryReadingStore();
+    await store.setSettings({ enabled: true, mascotCollapsed: false });
+    await store.saveCheckpoint(createCheckpoint(adapter, snapshot, 1, "automatic"));
+    const controller = new ReadingController(adapter, store, snapshot);
+    await controller.initialize();
+
+    await controller.inspectRecapBoundary();
+
+    // 冻结边界只报告范围，不改变阶段，也不产生手动书签。
+    expect(controller.getState().phase).toBe("offer-resume");
+    expect(controller.getState().manual).toBeNull();
+    controller.dispose();
+  });
+
   it("refreshes the tracked paragraph range when the article expands", async () => {
     vi.useFakeTimers();
     const location = setPage(
