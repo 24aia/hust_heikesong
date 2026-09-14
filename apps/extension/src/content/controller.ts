@@ -203,6 +203,14 @@ export class ReadingController {
     this.selector.start();
   }
 
+  cancelManualBookmark(): void {
+    if (this.state.phase !== "selecting") return;
+    this.selector?.stop();
+    this.selector = null;
+    this.update({ phase: "tracking", message: "已取消标记" });
+    this.startTracking();
+  }
+
   async inspectRecapBoundary(): Promise<void> {
     try {
       const input = await this.host.getRecapInput("brief");

@@ -1,3 +1,4 @@
+import type { ExplanationInput } from "../explanation/types";
 import type { AppError, ReadingCheckpoint, RecapInput } from "@contracts/types";
 
 export interface ReadingSettings {
@@ -19,7 +20,8 @@ export type RuntimeRequest =
   | { type: "LKS_STORAGE_REMOVE"; key: StorageKey }
   | { type: "LKS_CLEAR_READING" }
   // 回顾请求必须交给后台：content script 受页面跨域限制，无法直接访问模型服务。
-  | { type: "LKS_RECAP_GENERATE"; input: RecapInput };
+  | { type: "LKS_RECAP_GENERATE"; input: RecapInput }
+  | { type: "LKS_EXPLAIN"; input: ExplanationInput };
 
 export type RuntimeResponse<T = unknown> =
   | { ok: true; value?: T; ignored?: boolean }

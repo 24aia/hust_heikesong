@@ -1,9 +1,10 @@
+import { explanationMessages } from "../explanation/types";
 import type { ReadingCheckpoint } from "@contracts/types";
 import type { ReadingSettings, RuntimeRequest, RuntimeResponse } from "../shared/runtime";
 import { checkpointStorageKey } from "../shared/runtime";
 import { browserApi } from "../shared/browser-api";
 import { ReadingError } from "../shared/errors";
-import { generateRecap } from "./recap-provider";
+import { generateRecap, requestModelText } from "./recap-provider";
 
 const writeQueues = new Map<string, Promise<unknown>>();
 const supportedSender = /^https:\/\/(www\.zhihu\.com\/question\/[^/]+\/answer\/[^/?#]+|zhuanlan\.zhihu\.com\/p\/[^/?#]+)/;
@@ -80,6 +81,15 @@ async function handle(request: RuntimeRequest): Promise<RuntimeResponse> {
       const keys = Object.keys(values).filter((key) => key.startsWith("reading:") || key.startsWith("recap-cache:"));
       await browserApi.storage.local.remove(keys);
       return { ok: true };
+    }
+    case "LKS_EXPLAIN": {
+      let messages;
+      try { messages = explanationMessages(request.input); } catch (error) {
+        return { ok: false, error: { code: "INVALID_MESSAGE", message: error instanceof Error ? error.message : "无效词句" } };
+      }
+      const value = await requestModelText(messages);
+      if (typeof value !== "string" || !value.trim() || value.length > 8000) throw new ReadingError("MODEL_OUTPUT_INVALID", "解释结果为空或过长，请重试。");
+      return { ok: true, value };
     }
     case "LKS_RECAP_GENERATE": {
       const result = await generateRecap(request.input);

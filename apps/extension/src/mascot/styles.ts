@@ -3,12 +3,12 @@ export const companionStyles = `
 * { box-sizing: border-box; letter-spacing: 0; }
 button { font: inherit; }
 .shell { position: fixed; right: 20px; bottom: 20px; z-index: 2147483000; font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #181818; }
-.mascot { width: 56px; height: 56px; overflow: hidden; padding: 0; border: 0; border-radius: 8px; background: #fff; box-shadow: 0 4px 18px rgba(0,0,0,.2); cursor: pointer; }
-.mascot img { display: block; width: 56px; height: 56px; }
+.mascot { width: 80px; height: 80px; overflow: hidden; padding: 0; border: 0; border-radius: 8px; background: transparent; cursor: pointer; }
+.mascot img { display: block; width: 80px; height: 80px; }
 .mascot:focus-visible, button:focus-visible { outline: 3px solid #1677ff; outline-offset: 2px; }
-.panel { position: absolute; right: 0; bottom: 68px; width: min(310px, calc(100vw - 24px)); max-height: min(520px, calc(100vh - 100px)); overflow: auto; background: #fff; border: 1px solid #d6d6d6; border-radius: 8px; box-shadow: 0 12px 34px rgba(0,0,0,.2); }
-header { height: 44px; padding: 0 10px 0 14px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #e8e8e8; }
-header strong { font-size: 15px; }
+.panel { position: absolute; right: 0; bottom: 92px; width: min(310px, calc(100vw - 24px)); max-height: min(520px, calc(100vh - 124px)); overflow: auto; background: #fff; border: 1px solid #d6d6d6; border-radius: 8px; box-shadow: 0 12px 34px rgba(0,0,0,.2); }
+ .panel > header { height: 44px; padding: 0 10px 0 14px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #e8e8e8; }
+.panel > header strong { font-size: 15px; }
 .icon { width: 32px; height: 32px; border: 0; background: transparent; font-size: 24px; line-height: 1; cursor: pointer; }
 .body { padding: 14px; }
 p { margin: 0 0 12px; }
@@ -27,5 +27,18 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 .clear-data { width: 100%; border: 0; border-top: 1px solid #e8e8e8; border-radius: 0; color: #9f2d25; background: #fff; }
 .collapsed { position: fixed; right: 12px; bottom: 18px; z-index: 2147483000; width: 42px; height: 42px; overflow: hidden; padding: 0; border: 1px solid #c8c8c8; border-radius: 8px; background: #fff; color: #222; box-shadow: 0 4px 14px rgba(0,0,0,.16); cursor: pointer; }
 .collapsed img { display: block; width: 100%; height: 100%; }
+.checkpoint-title { border: 0; background: transparent; color: #0f568d; font-weight: 700; font-size: 16px; padding: 6px 0; cursor: pointer; }
+.checkpoint-title:disabled { opacity: 1; cursor: default; }
+.checkpoint-title:disabled span { visibility: hidden; }
+.text-button { border: 0; background: transparent; color: #1769aa; padding: 8px; cursor: pointer; }
+.explain-entry { display: block; width: 100%; min-height: 36px; margin-top: 8px; padding: 7px 12px; border: 1px solid #b8b8b8; border-radius: 6px; background: #fff; color: #181818; }
+.recap-position { position: absolute; right: 0; bottom: 92px; }
+.recap-position .lks-recap { max-height: calc(100vh - 124px); }
+.explanation blockquote { margin: 0 0 12px; max-height: 110px; overflow: auto; }
+.conversation { padding: 10px; margin-bottom: 10px; background: #f5f7f9; border-radius: 6px; }
+.conversation--user { background: #eef5fb; }
+.conversation p { margin: 5px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.followup { display: block; margin-bottom: 10px; }
+.followup textarea { display: block; width: 100%; min-height: 65px; resize: vertical; font: inherit; padding: 8px; border: 1px solid #b8b8b8; border-radius: 6px; }
 @media (max-width: 480px) { .shell { right: 12px; bottom: 12px; } .panel { width: calc(100vw - 24px); } }
 `;

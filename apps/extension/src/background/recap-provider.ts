@@ -27,7 +27,7 @@ function upstreamErrorCode(payload: unknown): string {
   return typeof code === "string" ? code : "";
 }
 
-export async function generateRecap(input: RecapInput): Promise<RecapResult> {
+export async function requestModelText(messages: Array<{ role: "user" | "assistant"; content: string }>): Promise<unknown> {
   if (!__ZHIHU_ACCESS_SECRET__) {
     throw new ReadingError(
       "NETWORK_ERROR",
@@ -59,7 +59,7 @@ export async function generateRecap(input: RecapInput): Promise<RecapResult> {
       },
       body: JSON.stringify({
         model: __RECAP_MODEL__,
-        messages: [{ role: "user", content: buildRecapPrompt(input, SUMMARY_VERSION) }],
+        messages,
         stream: false,
       }),
       signal: controller.signal,
@@ -101,5 +101,10 @@ export async function generateRecap(input: RecapInput): Promise<RecapResult> {
   }
 
   // reasoning_content 一律不读取，只取最终 content。
+  return content;
+}
+
+export async function generateRecap(input: RecapInput): Promise<RecapResult> {
+  const content = await requestModelText([{ role: "user", content: buildRecapPrompt(input, SUMMARY_VERSION) }]);
   return validateRecapResult(input, parseModelJson(content), SUMMARY_VERSION);
 }

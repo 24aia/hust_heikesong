@@ -8,6 +8,7 @@ const extensionRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)),
 const repoRoot = path.resolve(extensionRoot, "../..");
 const outDir = path.join(repoRoot, "dist/liukanshan-reader");
 const localAccessSecretPath = path.join(repoRoot, "资料/知乎直答/API-key.md");
+const mascotSource = path.join(repoRoot, "比赛内容/mascot.png");
 
 async function loadLocalAccessSecret() {
   if (process.env.ZHIHU_ACCESS_SECRET?.trim()) return "environment";
@@ -25,6 +26,8 @@ async function loadLocalAccessSecret() {
 // The two Vite builds share an output directory. Clear it explicitly so files
 // emitted by an earlier build configuration cannot leak into the extension ZIP.
 const credentialSource = await loadLocalAccessSecret();
+// The user-maintained mascot is the source of truth; do not retain a stale copy.
+await cp(mascotSource, path.join(extensionRoot, "assets/mascot.png"));
 console.log(
   credentialSource === "missing"
     ? "Building without a Zhihu credential; recap generation will be unavailable."
@@ -34,7 +37,7 @@ await rm(outDir, { recursive: true, force: true });
 await build({ configFile: path.join(extensionRoot, "vite.content.config.ts") });
 await build({ configFile: path.join(extensionRoot, "vite.background.config.ts") });
 await mkdir(path.join(outDir, "assets"), { recursive: true });
-for (const asset of ["mascot.png", "icon-16.png", "icon-32.png", "icon-48.png", "icon-128.png"]) {
+for (const asset of ["mascot.png", "icon-16.png", "icon-32.png", "icon-48.png", "icon-128.png", "mascot-sleep.gif", "mascot-ball.gif", "mascot-computer.gif", "mascot-greeting.gif", "mascot-idle.gif"]) {
   await cp(path.join(extensionRoot, "assets", asset), path.join(outDir, "assets", asset));
 }
 const manifest = JSON.parse(await readFile(path.join(extensionRoot, "manifest.base.json"), "utf8"));

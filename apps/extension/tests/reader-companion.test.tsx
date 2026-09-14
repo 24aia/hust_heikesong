@@ -1,5 +1,5 @@
-import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import type { ReadingController } from "../src/content/controller";
 import { ReaderCompanion } from "../src/mascot/ReaderCompanion";
 
@@ -54,11 +54,13 @@ function controller(): ReadingController {
     ignoreResume: vi.fn(),
     cancelRestore: vi.fn(),
     beginManualBookmark: vi.fn(),
+    cancelManualBookmark: vi.fn(),
     clearLocalData: vi.fn(),
   } as unknown as ReadingController;
 }
 
 describe("ReaderCompanion recap transition", () => {
+  afterEach(cleanup);
   it("replaces the companion panel with the recap panel and restores it on close", () => {
     render(<ReaderCompanion controller={controller()} />);
 
@@ -68,6 +70,26 @@ describe("ReaderCompanion recap transition", () => {
     expect(screen.queryByText("刘看山阅读伙伴")).toBeNull();
 
     fireEvent.click(screen.getByRole("button", { name: "关闭回顾" }));
-    expect(screen.getByText("刘看山阅读伙伴")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "切换到最近停留" }).textContent).toContain("手动书签");
+    expect(screen.getByRole("button", { name: "打开刘看山阅读伙伴" })).toBeTruthy();
+  });
+  it("opens explanation only explicitly and exits bookmark selection", () => {
+    const host = controller();
+    render(<ReaderCompanion controller={host} />);
+    fireEvent(document, new Event("selectionchange"));
+    expect(screen.queryByRole("region", { name: "词句解释" })).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "解释词句" }));
+    expect(host.cancelManualBookmark).toHaveBeenCalledOnce();
+    expect(screen.getByRole("region", { name: "词句解释" })).toBeTruthy();
+  });
+  it("switches through the existing checkpoint method and disables absent records", () => {
+    const host = controller();
+    const state = host.getState();
+    state.auto = { ...state.manual!, kind: "automatic" };
+    host.getState = () => state;
+    render(<ReaderCompanion controller={host} />);
+    fireEvent.click(screen.getByRole("button", { name: "切换到最近停留" }));
+    expect(host.chooseCheckpoint).toHaveBeenCalledWith("automatic");
+    expect(screen.queryByText("刘看山阅读伙伴")).toBeNull();
   });
 });
