@@ -34,7 +34,7 @@ await rm(outDir, { recursive: true, force: true });
 await build({ configFile: path.join(extensionRoot, "vite.content.config.ts") });
 await build({ configFile: path.join(extensionRoot, "vite.background.config.ts") });
 await mkdir(path.join(outDir, "assets"), { recursive: true });
-await cp(path.join(extensionRoot, "assets/mascot.svg"), path.join(outDir, "assets/mascot.svg"));
+await cp(path.join(extensionRoot, "assets/mascot.png"), path.join(outDir, "assets/mascot.png"));
 const manifest = JSON.parse(await readFile(path.join(extensionRoot, "manifest.base.json"), "utf8"));
 await writeFile(path.join(outDir, "manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`);
 

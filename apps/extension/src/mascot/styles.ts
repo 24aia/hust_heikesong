@@ -3,7 +3,7 @@ export const companionStyles = `
 * { box-sizing: border-box; letter-spacing: 0; }
 button { font: inherit; }
 .shell { position: fixed; right: 20px; bottom: 20px; z-index: 2147483000; font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #181818; }
-.mascot { width: 56px; height: 56px; padding: 0; border: 0; border-radius: 8px; background: #fff; box-shadow: 0 4px 18px rgba(0,0,0,.2); cursor: pointer; }
+.mascot { width: 56px; height: 56px; overflow: hidden; padding: 0; border: 0; border-radius: 8px; background: #fff; box-shadow: 0 4px 18px rgba(0,0,0,.2); cursor: pointer; }
 .mascot img { display: block; width: 56px; height: 56px; }
 .mascot:focus-visible, button:focus-visible { outline: 3px solid #1677ff; outline-offset: 2px; }
 .panel { position: absolute; right: 0; bottom: 68px; width: min(310px, calc(100vw - 24px)); max-height: min(520px, calc(100vh - 100px)); overflow: auto; background: #fff; border: 1px solid #d6d6d6; border-radius: 8px; box-shadow: 0 12px 34px rgba(0,0,0,.2); }
@@ -25,7 +25,7 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 .segments button[aria-pressed="true"] { background: #eef5fb; color: #0f568d; font-weight: 600; }
 .collapse { width: 100%; border: 0; border-top: 1px solid #e8e8e8; border-radius: 0; color: #666; background: #fafafa; }
 .clear-data { width: 100%; border: 0; border-top: 1px solid #e8e8e8; border-radius: 0; color: #9f2d25; background: #fff; }
-.collapsed { position: fixed; right: 12px; bottom: 18px; z-index: 2147483000; width: 42px; height: 42px; border: 1px solid #c8c8c8; border-radius: 8px; background: #fff; color: #222; box-shadow: 0 4px 14px rgba(0,0,0,.16); cursor: pointer; }
+.collapsed { position: fixed; right: 12px; bottom: 18px; z-index: 2147483000; width: 42px; height: 42px; overflow: hidden; padding: 0; border: 1px solid #c8c8c8; border-radius: 8px; background: #fff; color: #222; box-shadow: 0 4px 14px rgba(0,0,0,.16); cursor: pointer; }
 .collapsed img { display: block; width: 100%; height: 100%; }
 @media (max-width: 480px) { .shell { right: 12px; bottom: 12px; } .panel { width: calc(100vw - 24px); } }
 `;

@@ -32,7 +32,7 @@ export function ReaderCompanion({ controller }: { controller: ReadingController 
   if (state.collapsed) {
     return (
       <button className="collapsed" type="button" aria-label="展开阅读伙伴" title="展开阅读伙伴" onClick={() => void controller.setCollapsed(false)}>
-        <img src={browserApi.runtime.getURL("assets/mascot.svg")} alt="" />
+        <img src={browserApi.runtime.getURL("assets/mascot.png")} alt="" />
       </button>
     );
   }
@@ -95,7 +95,7 @@ export function ReaderCompanion({ controller }: { controller: ReadingController 
       )}
       {recapOpen && <RecapPanel {...recapDependencies} />}
       <button className="mascot" type="button" aria-label="打开刘看山阅读伙伴" aria-expanded={state.open} onClick={() => controller.toggleOpen()}>
-        <img src={browserApi.runtime.getURL("assets/mascot.svg")} alt="" />
+        <img src={browserApi.runtime.getURL("assets/mascot.png")} alt="" />
       </button>
     </div>
   );
