@@ -4,6 +4,9 @@ node_modules/
 # 构建产物：按计划由 npm run build:extension 生成，不提交
 dist/
 
+# Mozilla 签名包作为 GitHub Release 附件发布，不进入 Git 历史
+release/*.xpi
+
 # 密钥与本地配置：任何真实凭证都不进仓库
 API-key/
 资料/知乎直答/API-key.md
