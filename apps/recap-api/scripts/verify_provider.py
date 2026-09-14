@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import argparse
 import json
 import os
 
@@ -12,6 +13,9 @@ from app.validation.result import validate_recap_result
 
 
 async def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--show-result", action="store_true")
+    args = parser.parse_args()
     secret = os.environ.get("ZHIHU_ACCESS_SECRET", "").strip()
     if not secret:
         raise SystemExit("ZHIHU_ACCESS_SECRET is required")
@@ -43,15 +47,18 @@ async def main() -> None:
         validated = validate_recap_result(recap_input, result, "recap-v1")
     finally:
         await provider.close()
-    print(
-        {
-            "ok": True,
-            "schemaVersion": validated.schema_version,
-            "summaryVersion": validated.summary_version,
-            "itemCount": len(validated.items),
-            "allEvidenceValidated": True,
-        }
-    )
+    if args.show_result:
+        print(validated.model_dump_json(by_alias=True, indent=2))
+    else:
+        print(
+            {
+                "ok": True,
+                "schemaVersion": validated.schema_version,
+                "summaryVersion": validated.summary_version,
+                "itemCount": len(validated.items),
+                "allEvidenceValidated": True,
+            }
+        )
 
 
 if __name__ == "__main__":
