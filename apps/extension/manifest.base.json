@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "刘看山长文续读助手",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "在本地记录知乎长文阅读位置，并按用户操作生成前文回顾或解释所选词句。",
   "browser_specific_settings": {
     "gecko": {
