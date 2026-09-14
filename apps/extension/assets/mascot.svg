@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">临时阅读伙伴图标</title>
+  <rect x="4" y="4" width="56" height="56" rx="12" fill="#fff" stroke="#151515" stroke-width="3"/>
+  <path d="M18 28c2-10 8-15 14-15s12 5 14 15v15c0 7-6 11-14 11s-14-4-14-11V28Z" fill="#f6c84c" stroke="#151515" stroke-width="3"/>
+  <circle cx="27" cy="32" r="2.5" fill="#151515"/><circle cx="39" cy="32" r="2.5" fill="#151515"/>
+  <path d="M27 42c3 2 7 2 10 0" fill="none" stroke="#151515" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M17 17 10 9M47 17l7-8" stroke="#151515" stroke-width="3" stroke-linecap="round"/>
+</svg>

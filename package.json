@@ -1,0 +1,24 @@
+{
+  "name": "liukanshan-reading-agent",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/extension",
+    "packages/*"
+  ],
+  "scripts": {
+    "build:extension": "npm run build --workspace @liukanshan/extension",
+    "check:contracts": "node scripts/check-contracts.mjs",
+    "test:reading": "npm run test --workspace @liukanshan/extension",
+    "test:recap": "npm run test:recap --workspace @liukanshan/extension",
+    "typecheck": "npm run typecheck --workspace @liukanshan/extension",
+    "verify": "npm run check:contracts && npm run typecheck && npm run test:reading && npm run build:extension"
+  },
+  "devDependencies": {
+    "ajv": "8.17.1",
+    "typescript": "5.9.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

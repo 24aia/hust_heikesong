@@ -1,39 +1,33 @@
-# 开发状态
+# 实现状态
 
-更新时间：2026-09-14
+更新日期：2026-09-14
 
-## Agent B 已完成
+## Agent A 已实现
 
-- `packages/recap-ui`：brief/bridge 回顾面板、引用定位、继续阅读、错误状态、
-  `partial-prefix` 提示、缓存读取/刷新、关闭取消、迟到结果隔离。
-- 独立 Playground：原创长文及正常、文章开头、部分前文、定位失效、超时、
-  无效模型结果、慢任务场景。
-- `apps/recap-api`：FastAPI 四个端点、Pydantic v1 契约、哈希重算、输入上限、
-  SQLite 任务、限定队列、任务访问 token 哈希、限流、过期和重启中断语义。
-- Provider：deterministic Mock 与知乎直答非流式适配器；严格 JSON 解析、错误
-  收敛和逐字引用校验。
-- 真实模型：`zhida-fast-1p5` 已用原创三段短文本成功生成 3 个要点，结构、
-  哈希和全部引用均通过校验。
-- 文档：B 端本地运行、部署与真实 API 核验记录。
+- Manifest V3 扩展骨架、Shadow DOM 阅读伙伴和本地同意状态。
+- 单回答详情页及专栏文章页检测，正文纯文本快照与实际 URL ID 提取。
+- 自动断点和手动书签独立存储；后台按时间戳拒绝旧标签页覆盖新记录。
+- 恢复报价状态机、文本/上下文定位、有界布局校正、取消和失败提示。
+- 冻结断点的 `ReadingHost`；`RecapInput` 严格排除断点段落及后文。
+- 回顾输入在扩展侧按 Unicode 码点执行 20,000 上限，超限明确失败且不静默截断。
+- 恢复操作使用尝试序号隔离迟到结果；用户取消后不会被旧异步结果覆盖。
+- 面板可经确认清除本地断点、设置和回顾缓存，并准确反馈存储失败。
+- 自动断点优先选择穿过视口阅读线的长段落，节流期间的新候选会延后保存而不会丢失。
+- 正文动态展开后刷新段落快照；重复段、自然省略号、emoji 长段锚点均使用更严格的定位规则。
+- 手动书签支持直接点击和 Tab/Enter/空格键选择，并恢复页面原有焦点属性。
+- 公共类型、JSON Schema、哈希规则、黄金样例和 MockRecapClient。
 
-## 实际检查
+## 最近验证
 
-- 后端：13 项 pytest 测试通过。
-- 前端：4 项 Vitest 测试通过。
-- Playground：TypeScript 检查和 Vite 生产构建通过。
-- 依赖审计：npm 安装时报告 0 个已知漏洞。
+- `npm.cmd run check:contracts`：6 个 fixture 与哈希校验通过。
+- `npm.cmd run typecheck`：通过。
+- `npm.cmd run test:reading`：7 个测试文件、26 个测试通过。
+- `npm.cmd run build:extension`：成功生成可加载目录与 ZIP。
+- 通过 Chrome 153 调试会话对一篇可访问知乎专栏做加载态 smoke test：识别到 161 段正文，扩展宿主、Shadow DOM 和续读提示均存在。
 
-## 契约
+## 尚未声称完成
 
-计划中的 A 端 `contracts` workspace 尚不存在。B 端按计划文档冻结的 v1 字段
-实现了 Pydantic 模型，并在 `packages/recap-ui/src/types.ts` 保留同语义临时
-TypeScript 镜像。A 建立唯一契约源后，需要用其 type-only import 替换镜像，
-并用中英文、换行和 emoji 黄金样例校验 JS/Python 哈希一致性。
-
-本次没有修改扩展、manifest、根 npm 配置或用户已有赛事文档。
-
-## 未验证与阻塞
-
-- A 尚未提供 ReadingHost、chrome.storage CacheStore、后台 RecapClient 和真实
-  页面快照，因此 P2 浏览器联调不在 B 独立模块内完成。
-- 尚未进行公网 HTTPS 部署、真实浏览器扩展挂载、跨浏览器和人工语义质量验收。
+- Agent B 的回顾面板、FastAPI、真实模型和任务轮询不属于本交付，`npm run dev:recap` 尚不可用。
+- 尚未在登录态真实知乎页面完成 5 篇文章、10 个断点的人工实测；DOM 选择器当前由语义属性、URL 和隔离 fixture 验证。
+- 未测试 Edge、图片延迟加载的真实像素误差、知乎多回答聚合页或折叠正文自动展开。
+- 当前 mascot 是原创临时图标，不宣称为知乎官方刘看山素材。

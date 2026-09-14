@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "inputHash": "073f13354a87140a32ad8ff098d7c2c07c35decb0c8661ead700875544c8be23",
+  "mode": "brief",
+  "summaryVersion": "mock-v1",
+  "items": [
+    {
+      "text": "学习通过持续修正问题发生。",
+      "evidence": [{ "paragraphId": "p-0-intro", "quote": "不断重写问题" }]
+    }
+  ],
+  "bridge": null,
+  "warnings": []
+}

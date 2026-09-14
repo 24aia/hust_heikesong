@@ -1,0 +1,98 @@
+import type { ReadingCheckpoint } from "@contracts/types";
+import type { ReadingSettings, RuntimeRequest, RuntimeResponse } from "../shared/runtime";
+import { checkpointStorageKey } from "../shared/runtime";
+
+const writeQueues = new Map<string, Promise<unknown>>();
+const supportedSender = /^https:\/\/(www\.zhihu\.com\/question\/[^/]+\/answer\/[^/?#]+|zhuanlan\.zhihu\.com\/p\/[^/?#]+)/;
+
+function isSenderAllowed(sender: chrome.runtime.MessageSender): boolean {
+  return sender.id === chrome.runtime.id && Boolean(sender.url && (supportedSender.test(sender.url) || sender.url.startsWith(chrome.runtime.getURL(""))));
+}
+
+function isCheckpoint(value: unknown): value is ReadingCheckpoint {
+  if (!value || typeof value !== "object") return false;
+  const item = value as Partial<ReadingCheckpoint>;
+  return (
+    item.schemaVersion === 1 &&
+    typeof item.contentKey === "string" &&
+    /^(answer|article):[^:]+$/.test(item.contentKey) &&
+    (item.kind === "automatic" || item.kind === "manual") &&
+    typeof item.savedAt === "string" &&
+    !Number.isNaN(Date.parse(item.savedAt)) &&
+    typeof item.anchor?.quote === "string" &&
+    item.anchor.quote.length > 0 &&
+    item.anchor.quote.length <= 500 &&
+    typeof item.sourceFingerprint === "string"
+  );
+}
+
+function enqueue<T>(key: string, task: () => Promise<T>): Promise<T> {
+  const prior = writeQueues.get(key) ?? Promise.resolve();
+  const next = prior.catch(() => undefined).then(task);
+  writeQueues.set(key, next.finally(() => {
+    if (writeQueues.get(key) === next) writeQueues.delete(key);
+  }));
+  return next;
+}
+
+async function saveCheckpoint(checkpoint: ReadingCheckpoint): Promise<RuntimeResponse> {
+  if (!isCheckpoint(checkpoint)) return { ok: false, error: { code: "INVALID_MESSAGE", message: "断点数据不完整" } };
+  const key = checkpointStorageKey(checkpoint);
+  return enqueue(key, async () => {
+    const existing = (await chrome.storage.local.get(key))[key] as ReadingCheckpoint | undefined;
+    if (existing && existing.savedAt >= checkpoint.savedAt) return { ok: true, ignored: true };
+    await chrome.storage.local.set({ [key]: checkpoint });
+    return { ok: true, ignored: false };
+  });
+}
+
+async function handle(request: RuntimeRequest): Promise<RuntimeResponse> {
+  switch (request.type) {
+    case "LKS_STORAGE_GET": {
+      const value = (await chrome.storage.local.get(request.key))[request.key] ?? null;
+      return { ok: true, value };
+    }
+    case "LKS_SAVE_CHECKPOINT":
+      return saveCheckpoint(request.checkpoint);
+    case "LKS_CACHE_SET": {
+      if (JSON.stringify(request.value).length > 500_000) {
+        return { ok: false, error: { code: "QUOTA_EXCEEDED", message: "单份回顾缓存过大" } };
+      }
+      await chrome.storage.local.set({ [request.key]: request.value });
+      return { ok: true };
+    }
+    case "LKS_SETTINGS_SET": {
+      const settings: ReadingSettings = {
+        enabled: Boolean(request.settings.enabled),
+        mascotCollapsed: Boolean(request.settings.mascotCollapsed),
+      };
+      await chrome.storage.local.set({ "reading:settings": settings });
+      return { ok: true };
+    }
+    case "LKS_STORAGE_REMOVE":
+      await chrome.storage.local.remove(request.key as string);
+      return { ok: true };
+    case "LKS_CLEAR_READING": {
+      const values = await chrome.storage.local.get(null);
+      const keys = Object.keys(values).filter((key) => key.startsWith("reading:") || key.startsWith("recap-cache:"));
+      await chrome.storage.local.remove(keys);
+      return { ok: true };
+    }
+    default:
+      return { ok: false, error: { code: "INVALID_MESSAGE", message: "未知扩展消息" } };
+  }
+}
+
+chrome.runtime.onMessage.addListener((request: RuntimeRequest, sender, sendResponse) => {
+  if (!isSenderAllowed(sender)) {
+    sendResponse({ ok: false, error: { code: "FORBIDDEN", message: "消息来源不受支持" } } satisfies RuntimeResponse);
+    return false;
+  }
+  handle(request)
+    .then(sendResponse)
+    .catch((error: unknown) => {
+      const message = error instanceof Error ? error.message : "本地存储失败";
+      sendResponse({ ok: false, error: { code: "STORAGE_ERROR", message } } satisfies RuntimeResponse);
+    });
+  return true;
+});

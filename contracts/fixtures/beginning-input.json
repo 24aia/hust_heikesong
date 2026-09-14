@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "contentKey": "article:24680",
+  "title": "刚刚开始",
+  "sourceUrl": "https://zhuanlan.zhihu.com/p/24680",
+  "inputHash": "642e659dcbb008b18c43d3e517da7e7e18520c564d9cf6b381b61180e0deef62",
+  "mode": "bridge",
+  "cutoff": { "anchorKind": "automatic", "policy": "before-paragraph" },
+  "coverage": "prefix-to-cutoff",
+  "paragraphs": []
+}

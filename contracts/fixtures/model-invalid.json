@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "inputHash": "not-a-hash",
+  "mode": "brief",
+  "summaryVersion": "mock-v1",
+  "items": [{ "text": "缺少可验证引用", "evidence": [] }],
+  "bridge": null,
+  "warnings": []
+}

@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://liukanshan.local/schemas/recap-input.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "contentKey", "title", "sourceUrl", "inputHash", "mode", "cutoff", "coverage", "paragraphs"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "contentKey": { "type": "string", "pattern": "^(answer|article):[^:]+$" },
+    "title": { "type": "string", "minLength": 1 },
+    "sourceUrl": { "type": "string", "format": "uri" },
+    "inputHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "mode": { "enum": ["brief", "bridge"] },
+    "cutoff": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["anchorKind", "policy"],
+      "properties": {
+        "anchorKind": { "enum": ["automatic", "manual"] },
+        "policy": { "const": "before-paragraph" }
+      }
+    },
+    "coverage": { "enum": ["prefix-to-cutoff", "partial-prefix"] },
+    "paragraphs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "text"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "text": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  }
+}

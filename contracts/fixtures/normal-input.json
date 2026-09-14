@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "contentKey": "answer:987654321",
+  "title": "在不确定中学习",
+  "sourceUrl": "https://www.zhihu.com/question/123456789/answer/987654321",
+  "inputHash": "073f13354a87140a32ad8ff098d7c2c07c35decb0c8661ead700875544c8be23",
+  "mode": "brief",
+  "cutoff": { "anchorKind": "manual", "policy": "before-paragraph" },
+  "coverage": "prefix-to-cutoff",
+  "paragraphs": [
+    { "id": "p-0-intro", "text": "学习不是把答案塞进记忆，而是不断重写问题。" },
+    { "id": "p-1-context", "text": "中文、换行\n与 emoji 😀 都应稳定参与哈希。" }
+  ]
+}
