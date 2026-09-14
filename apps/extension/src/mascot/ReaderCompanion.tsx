@@ -29,6 +29,16 @@ export function ReaderCompanion({ controller }: { controller: ReadingController 
     [controller],
   );
 
+  // 回顾是阅读伙伴的下一层界面，而不是叠加在伙伴面板后面的第二张卡片。
+  // 单独渲染它可以避免用户先关闭伙伴面板，才能看到已经打开的回顾界面。
+  if (recapOpen) {
+    return (
+      <div className="shell shell--recap">
+        <RecapPanel {...recapDependencies} />
+      </div>
+    );
+  }
+
   if (state.collapsed) {
     return (
       <button className="collapsed" type="button" aria-label="展开阅读伙伴" title="展开阅读伙伴" onClick={() => void controller.setCollapsed(false)}>
@@ -93,7 +103,6 @@ export function ReaderCompanion({ controller }: { controller: ReadingController 
           )}
         </section>
       )}
-      {recapOpen && <RecapPanel {...recapDependencies} />}
       <button className="mascot" type="button" aria-label="打开刘看山阅读伙伴" aria-expanded={state.open} onClick={() => controller.toggleOpen()}>
         <img src={browserApi.runtime.getURL("assets/mascot.png")} alt="" />
       </button>
