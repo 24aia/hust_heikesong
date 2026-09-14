@@ -82,6 +82,28 @@ export class ZhihuPageAdapter implements PageAdapter {
     };
   }
 
+  extractSnapshotByContentKey(contentKey: string): PageSnapshot {
+    const current = this.detectContent();
+    if (current.contentKey === contentKey) return this.extractSnapshot(current);
+    if (!contentKey.startsWith("answer:")) {
+      throw new ReadingError("ANCHOR_NOT_FOUND", "当前页面中没有对应的正文");
+    }
+
+    const answerId = contentKey.slice("answer:".length);
+    const content = this.detectLoadedAnswers().find((candidate) => candidate.contentKey === contentKey);
+    if (!content) throw new ReadingError("ANCHOR_NOT_FOUND", `当前页面中尚未加载回答 ${answerId}`);
+    return this.extractSnapshot(content);
+  }
+
+  extractAvailableSnapshots(): PageSnapshot[] {
+    const current = this.detectContent();
+    if (current.contentKey.startsWith("article:")) return [this.extractSnapshot(current)];
+
+    const contents = this.detectLoadedAnswers();
+    if (!contents.some(({ contentKey }) => contentKey === current.contentKey)) contents.unshift(current);
+    return contents.map((content) => this.extractSnapshot(content));
+  }
+
   extractSnapshot(content = this.detectContent()): PageSnapshot {
     const candidates = Array.from(content.root.querySelectorAll<HTMLElement>(BLOCK_SELECTOR));
     const paragraphs: ExtractedParagraph[] = [];
@@ -154,5 +176,34 @@ export class ZhihuPageAdapter implements PageAdapter {
       return { status: "ambiguous", candidates: scored.map(({ paragraph }) => paragraph) };
     }
     return { status: "located", paragraph: scored[0].paragraph, index: scored[0].index };
+  }
+
+  private detectLoadedAnswers(): DetectedContent[] {
+    const href = this.location.href;
+    const match = href.match(/^https:\/\/www\.zhihu\.com\/question\/(\d+)\/answer\/(\d+)/);
+    if (!match) return [];
+    const [, questionId, urlAnswerId] = match;
+    const title = getTitle(this.document);
+    const contents: DetectedContent[] = [];
+    const seen = new Set<string>();
+
+    for (const root of this.document.querySelectorAll<HTMLElement>(".RichContent-inner")) {
+      const metadata = root.closest<HTMLElement>("[data-zop]")?.dataset.zop
+        ?? root.closest<HTMLElement>(".AnswerItem, .ContentItem, article")?.querySelector<HTMLElement>("[data-zop]")?.dataset.zop;
+      const itemId = metadata?.match(/\"itemId\"\s*:\s*\"?(\d+)\"?/)?.[1];
+      if (!itemId || seen.has(itemId)) continue;
+      seen.add(itemId);
+      const contentScope = root.closest<HTMLElement>(".RichContent, .ContentItem, .AnswerItem, article") ?? root;
+      contents.push({
+        contentKey: `answer:${itemId}`,
+        sourceUrl: itemId === urlAnswerId ? href : `https://www.zhihu.com/question/${questionId}/answer/${itemId}`,
+        title,
+        root,
+        coverage: contentScope.querySelector(".ContentItem-expandButton, [aria-label*='展开']")
+          ? "partial-prefix"
+          : "prefix-to-cutoff",
+      });
+    }
+    return contents;
   }
 }

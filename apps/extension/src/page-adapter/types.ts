@@ -27,6 +27,8 @@ export type AnchorResolution =
 export interface PageAdapter {
   detectContent(): DetectedContent;
   extractSnapshot(content?: DetectedContent): PageSnapshot;
+  extractSnapshotByContentKey(contentKey: string): PageSnapshot;
+  extractAvailableSnapshots(): PageSnapshot[];
   createAnchor(snapshot: PageSnapshot, index: number): TextAnchor;
   locateAnchor(snapshot: PageSnapshot, anchor: TextAnchor): AnchorResolution;
 }

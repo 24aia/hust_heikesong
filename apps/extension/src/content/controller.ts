@@ -123,7 +123,13 @@ export class ReadingController {
     const checkpoint = kind === "manual" ? this.state.manual : this.state.auto;
     if (!checkpoint) return;
     this.host.freezeCheckpoint(checkpoint);
-    this.update({ activeKind: kind, currentParagraph: checkpoint.anchor.paragraphIndexHint + 1 });
+    let paragraphCount = this.state.paragraphCount;
+    try {
+      paragraphCount = this.adapter.extractSnapshotByContentKey(checkpoint.contentKey).paragraphs.length;
+    } catch {
+      // Keep the last known count; restore will report if the answer is no longer loaded.
+    }
+    this.update({ activeKind: kind, currentParagraph: checkpoint.anchor.paragraphIndexHint + 1, paragraphCount });
   }
 
   ignoreResume(): void {
@@ -168,12 +174,27 @@ export class ReadingController {
   beginManualBookmark(): void {
     this.tracker?.pause();
     this.selector?.stop();
+    let snapshots: PageSnapshot[];
+    try {
+      snapshots = this.adapter.extractAvailableSnapshots();
+    } catch (error) {
+      this.update({ open: true, message: error instanceof Error ? error.message : "没有找到可记录的回答" });
+      this.startTracking();
+      return;
+    }
+    const targets = snapshots.flatMap((snapshot) =>
+      snapshot.paragraphs.map((paragraph, index) => ({ paragraph, index, snapshot })),
+    );
+    const targetByElement = new Map(targets.map((target) => [target.paragraph.element, target]));
     // 面板必须保持打开：操作说明与失败原因都写在 state.message 里，
     // 而 message 只在面板内渲染。关闭面板会让选择模式完全没有可见反馈。
-    this.update({ phase: "selecting", open: true, message: "点击正文段落保存，Esc 取消" });
+    this.update({ phase: "selecting", open: true, message: `点击任一已加载回答的正文段落保存，Esc 取消（当前 ${snapshots.length} 个回答）` });
     this.selector = new ManualBookmarkSelector(
-      this.snapshot.paragraphs,
-      (_paragraph, index) => void this.saveManual(index),
+      targets.map(({ paragraph }) => paragraph),
+      (paragraph) => {
+        const target = targetByElement.get(paragraph.element);
+        if (target) void this.saveManual(target.snapshot, target.index);
+      },
       () => {
         this.update({ phase: "tracking", open: true, message: "已取消标记" });
         this.startTracking();
@@ -284,8 +305,8 @@ export class ReadingController {
     }
   }
 
-  private async saveManual(index: number): Promise<void> {
-    const checkpoint = createCheckpoint(this.adapter, this.snapshot, index, "manual");
+  private async saveManual(snapshot: PageSnapshot, index: number): Promise<void> {
+    const checkpoint = createCheckpoint(this.adapter, snapshot, index, "manual");
     try {
       const result = await this.store.saveCheckpoint(checkpoint);
       if (result.ignored) throw new Error("有更新的书签已存在，本次未覆盖");
@@ -295,6 +316,8 @@ export class ReadingController {
         activeKind: "manual",
         phase: "tracking",
         open: true,
+        currentParagraph: index + 1,
+        paragraphCount: snapshot.paragraphs.length,
         message: `已记住：${checkpoint.anchor.quote.slice(0, 42)}`,
       });
     } catch (error) {

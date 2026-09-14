@@ -39,6 +39,28 @@ describe("ZhihuPageAdapter", () => {
     expect(snapshot.content.coverage).toBe("partial-prefix");
   });
 
+  it("discovers every loaded answer and keeps each answer in its own content scope", () => {
+    const location = setPage(
+      "https://www.zhihu.com/question/123/answer/456",
+      `<h1 class="QuestionHeader-title">一个问题</h1>
+       <article class="AnswerItem" data-zop='{"itemId":"456"}'>
+         <div class="QuestionAnswer-content"><div class="RichContent-inner"><p>第一个回答。</p></div></div>
+       </article>
+       <article class="AnswerItem" data-zop='{"itemId":"789"}'>
+         <div class="RichContent-inner"><p>另一个回答第一段。</p><p>另一个回答第二段。</p></div>
+       </article>`,
+    );
+    const adapter = new ZhihuPageAdapter(document, location);
+
+    const snapshots = adapter.extractAvailableSnapshots();
+
+    expect(snapshots.map(({ content }) => content.contentKey)).toEqual(["answer:456", "answer:789"]);
+    expect(adapter.extractSnapshotByContentKey("answer:789").paragraphs.map(({ text }) => text)).toEqual([
+      "另一个回答第一段。",
+      "另一个回答第二段。",
+    ]);
+  });
+
   it("uses neighbouring context to distinguish repeated paragraphs", () => {
     const location = setPage(
       "https://zhuanlan.zhihu.com/p/77",

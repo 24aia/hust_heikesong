@@ -34,7 +34,7 @@ export class ExtensionReadingHost implements ReadingHost {
   async getRecapInput(mode: RecapMode): Promise<RecapInput> {
     const checkpoint = this.checkpoint;
     if (!checkpoint) throw new ReadingError("ANCHOR_NOT_FOUND", "请先选择一个阅读断点");
-    const snapshot = this.adapter.extractSnapshot();
+    const snapshot = this.adapter.extractSnapshotByContentKey(checkpoint.contentKey);
     if (snapshot.content.contentKey !== checkpoint.contentKey) throw new ReadingError("ANCHOR_NOT_FOUND", "当前正文与断点不一致");
     const resolution = this.adapter.locateAnchor(snapshot, checkpoint.anchor);
     if (resolution.status !== "located") throw new ReadingError("ANCHOR_NOT_FOUND", "原文可能已变化，无法确定回顾边界");
@@ -74,7 +74,7 @@ export class ExtensionReadingHost implements ReadingHost {
     if (!frozen || frozen.snapshot.content.contentKey !== contentKey) return { status: "stale" };
     let current: PageSnapshot;
     try {
-      current = this.adapter.extractSnapshot();
+      current = this.adapter.extractSnapshotByContentKey(contentKey);
     } catch {
       return { status: "missing" };
     }
@@ -87,7 +87,7 @@ export class ExtensionReadingHost implements ReadingHost {
 
   async resumeReading(): Promise<{ status: "located" | "missing" }> {
     if (!this.checkpoint) return { status: "missing" };
-    const snapshot = this.adapter.extractSnapshot();
+    const snapshot = this.adapter.extractSnapshotByContentKey(this.checkpoint.contentKey);
     const result = await this.restorer.restore(snapshot, this.checkpoint);
     if (result.status === "cancelled") throw new ReadingError("CANCELLED", "已取消恢复");
     return { status: result.status === "located" ? "located" : "missing" };

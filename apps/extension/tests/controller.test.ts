@@ -125,6 +125,38 @@ describe("ReadingController initialization", () => {
     controller.dispose();
   });
 
+  it("manually bookmarks another loaded answer without creating an automatic checkpoint for it", async () => {
+    const location = setPage(
+      "https://www.zhihu.com/question/123/answer/456",
+      `<h1 class="QuestionHeader-title">一个问题</h1>
+       <article class="AnswerItem" data-zop='{"itemId":"456"}'>
+         <div class="QuestionAnswer-content"><div class="RichContent-inner"><p>首个回答正文。</p></div></div>
+       </article>
+       <article class="AnswerItem" data-zop='{"itemId":"789"}'>
+         <div class="RichContent-inner"><p>其他回答前文。</p><p>其他回答断点。</p><p>其他回答后文。</p></div>
+       </article>`,
+    );
+    const adapter = new ZhihuPageAdapter(document, location);
+    const snapshot = adapter.extractSnapshot();
+    const store = new MemoryReadingStore();
+    await store.setSettings({ enabled: true, mascotCollapsed: false });
+    const controller = new ReadingController(adapter, store, snapshot);
+    await controller.initialize();
+
+    controller.beginManualBookmark();
+    const otherAnswer = adapter.extractSnapshotByContentKey("answer:789");
+    otherAnswer.paragraphs[1].element.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    await vi.waitFor(() => expect(controller.getState().manual?.contentKey).toBe("answer:789"));
+
+    expect((await store.getCheckpoint("answer:789", "manual"))?.anchor.quote).toBe("其他回答断点。");
+    expect(await store.getCheckpoint("answer:789", "automatic")).toBeNull();
+    const input = await controller.host.getRecapInput("brief");
+    expect(input.contentKey).toBe("answer:789");
+    expect(input.paragraphs.map(({ text }) => text)).toEqual(["其他回答前文。"]) ;
+    expect(JSON.stringify(input)).not.toContain("首个回答正文");
+    controller.dispose();
+  });
+
   it("keeps the resume offer on screen after inspecting the recap boundary", async () => {
     const location = setPage(
       "https://zhuanlan.zhihu.com/p/15",
