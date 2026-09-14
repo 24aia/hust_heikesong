@@ -26,5 +26,6 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 .collapse { width: 100%; border: 0; border-top: 1px solid #e8e8e8; border-radius: 0; color: #666; background: #fafafa; }
 .clear-data { width: 100%; border: 0; border-top: 1px solid #e8e8e8; border-radius: 0; color: #9f2d25; background: #fff; }
 .collapsed { position: fixed; right: 12px; bottom: 18px; z-index: 2147483000; width: 42px; height: 42px; border: 1px solid #c8c8c8; border-radius: 8px; background: #fff; color: #222; box-shadow: 0 4px 14px rgba(0,0,0,.16); cursor: pointer; }
+.collapsed img { display: block; width: 100%; height: 100%; }
 @media (max-width: 480px) { .shell { right: 12px; bottom: 12px; } .panel { width: calc(100vw - 24px); } }
 `;

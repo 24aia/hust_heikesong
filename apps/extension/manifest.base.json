@@ -3,15 +3,19 @@
   "name": "刘看山长文续读助手",
   "version": "0.1.0",
   "description": "在本地记住知乎长文停留位置，并在确认后恢复。",
-  "permissions": ["storage"],
-  "icons": {
-    "16": "assets/mascot.png",
-    "32": "assets/mascot.png",
-    "48": "assets/mascot.png",
-    "128": "assets/mascot.png"
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "liukanshan-reader@example.com",
+      "strict_min_version": "142.0",
+      "data_collection_permissions": {
+        "required": ["none"]
+      }
+    }
   },
+  "permissions": ["storage"],
+  "host_permissions": ["https://developer.zhihu.com/*"],
   "background": {
-    "service_worker": "background.js"
+    "scripts": ["background.js"]
   },
   "action": {
     "default_title": "刘看山长文续读助手"
@@ -28,7 +32,7 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["assets/mascot.png"],
+      "resources": ["assets/mascot.svg"],
       "matches": ["https://www.zhihu.com/*", "https://zhuanlan.zhihu.com/*"]
     }
   ]

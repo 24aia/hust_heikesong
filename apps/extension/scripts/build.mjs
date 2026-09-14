@@ -1,5 +1,5 @@
 import { build } from "vite";
-import { cp, mkdir, readFile, readdir, writeFile } from "node:fs/promises";
+import { cp, mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { deflateRawSync } from "node:zlib";
@@ -7,11 +7,34 @@ import { deflateRawSync } from "node:zlib";
 const extensionRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const repoRoot = path.resolve(extensionRoot, "../..");
 const outDir = path.join(repoRoot, "dist/liukanshan-reader");
+const localAccessSecretPath = path.join(repoRoot, "资料/知乎直答/API-key.md");
 
+async function loadLocalAccessSecret() {
+  if (process.env.ZHIHU_ACCESS_SECRET?.trim()) return "environment";
+  try {
+    const secret = (await readFile(localAccessSecretPath, "utf8")).trim();
+    if (!secret) throw new Error("本地知乎直答密钥文件为空");
+    process.env.ZHIHU_ACCESS_SECRET = secret;
+    return "local-file";
+  } catch (error) {
+    if (error && typeof error === "object" && "code" in error && error.code === "ENOENT") return "missing";
+    throw error;
+  }
+}
+
+// The two Vite builds share an output directory. Clear it explicitly so files
+// emitted by an earlier build configuration cannot leak into the extension ZIP.
+const credentialSource = await loadLocalAccessSecret();
+console.log(
+  credentialSource === "missing"
+    ? "Building without a Zhihu credential; recap generation will be unavailable."
+    : `Embedding the Zhihu credential from ${credentialSource === "environment" ? "the environment" : "the ignored local key file"}.`,
+);
+await rm(outDir, { recursive: true, force: true });
 await build({ configFile: path.join(extensionRoot, "vite.content.config.ts") });
 await build({ configFile: path.join(extensionRoot, "vite.background.config.ts") });
 await mkdir(path.join(outDir, "assets"), { recursive: true });
-await cp(path.join(extensionRoot, "assets/mascot.png"), path.join(outDir, "assets/mascot.png"));
+await cp(path.join(extensionRoot, "assets/mascot.svg"), path.join(outDir, "assets/mascot.svg"));
 const manifest = JSON.parse(await readFile(path.join(extensionRoot, "manifest.base.json"), "utf8"));
 await writeFile(path.join(outDir, "manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`);
 
