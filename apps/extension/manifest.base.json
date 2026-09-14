@@ -2,23 +2,23 @@
   "manifest_version": 3,
   "name": "刘看山长文续读助手",
   "version": "0.1.0",
-  "description": "在本地记住知乎长文停留位置，并在确认后恢复。",
+  "description": "在本地记录知乎长文阅读位置，并按用户操作将断点前正文发送至知乎直答生成回顾。",
   "browser_specific_settings": {
     "gecko": {
-      "id": "liukanshan-reader@example.com",
+      "id": "liukanshan-reader@24aia.github.io",
       "strict_min_version": "142.0",
       "data_collection_permissions": {
-        "required": ["none"]
+        "required": ["websiteContent"]
       }
     }
   },
   "permissions": ["storage"],
   "host_permissions": ["https://developer.zhihu.com/*"],
   "icons": {
-    "16": "assets/mascot.png",
-    "32": "assets/mascot.png",
-    "48": "assets/mascot.png",
-    "128": "assets/mascot.png"
+    "16": "assets/icon-16.png",
+    "32": "assets/icon-32.png",
+    "48": "assets/icon-48.png",
+    "128": "assets/icon-128.png"
   },
   "background": {
     "scripts": ["background.js"]
