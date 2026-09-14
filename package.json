@@ -9,6 +9,9 @@
   "scripts": {
     "build:extension": "npm run build --workspace @liukanshan/extension",
     "check:contracts": "node scripts/check-contracts.mjs",
+    "dev:firefox": "web-ext run --source-dir dist/liukanshan-reader",
+    "build:xpi": "web-ext build --source-dir dist/liukanshan-reader --artifacts-dir dist/artifacts --overwrite-dest",
+    "sign:xpi": "web-ext sign --channel unlisted --source-dir dist/liukanshan-reader --artifacts-dir dist/artifacts",
     "test:reading": "npm run test --workspace @liukanshan/extension",
     "test:recap": "npm run test:recap --workspace @liukanshan/extension",
     "typecheck": "npm run typecheck --workspace @liukanshan/extension",
@@ -16,7 +19,8 @@
   },
   "devDependencies": {
     "ajv": "8.17.1",
-    "typescript": "5.9.2"
+    "typescript": "5.9.2",
+    "web-ext": "10.6.0"
   },
   "engines": {
     "node": ">=20"

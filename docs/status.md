@@ -17,17 +17,31 @@
 - 手动书签支持直接点击和 Tab/Enter/空格键选择，并恢复页面原有焦点属性。
 - 公共类型、JSON Schema、哈希规则、黄金样例和 MockRecapClient。
 
-## 最近验证
+## 目标浏览器已切换为火狐
 
-- `npm.cmd run check:contracts`：6 个 fixture 与哈希校验通过。
-- `npm.cmd run typecheck`：通过。
-- `npm.cmd run test:reading`：7 个测试文件、26 个测试通过。
-- `npm.cmd run build:extension`：成功生成可加载目录与 ZIP。
-- 通过 Chrome 153 调试会话对一篇可访问知乎专栏做加载态 smoke test：识别到 161 段正文，扩展宿主、Shadow DOM 和续读提示均存在。
+第一版只验收桌面版火狐（`strict_min_version` 142.0），已彻底放弃 Chrome。原因：`--load-extension` 在 Chrome 137 从官方品牌版本移除，在本机 Chrome 154 上静默失效；替代的 CDP `Extensions.loadUnpacked` 需要 `--remote-debugging-pipe` 加 `--enable-unsafe-extension-debugging`，后者允许任何本地进程安装扩展，不适合日常 profile。
+
+迁移改动：新增 `src/shared/browser-api.ts` 统一 API 入口；`manifest` 改用 `background.scripts`、`browser_specific_settings.gecko`；类型包换为 `@types/firefox-webext-browser`；开发加载改用 `web-ext`。
+
+## 最近验证（2026-09-14，迁移后实际执行）
+
+- `npm run check:contracts`：6 个 fixture 与哈希校验通过。
+- `npm run typecheck`：通过（已切换到火狐类型包）。
+- `npm run test:reading`：7 个测试文件、26 个测试通过。
+- `npm run build:extension`：成功生成可加载目录与 ZIP。
+- `npx web-ext lint`：**0 errors、2 warnings**。使用 Mozilla 官方 addons-linter，与 AMO 签名时的校验一致，证明火狐 manifest 结构有效（`background.scripts`、`gecko.id` 均被接受）。两条警告来自打包进 bundle 的 React 内部 `innerHTML`，`apps/extension/src/` 中不存在 `innerHTML`。
+- `npm run dev:firefox`：火狐正常启动并载入扩展。
+
+## 已作废的历史记录
+
+此前"通过 Chrome 153 调试会话对知乎专栏做加载态 smoke test、识别到 161 段正文"的记录**不再作为验收依据**：目标浏览器已切换，且该记录本身可疑——`--load-extension` 在 Chrome 137 已失效，当时若非手动加载则无法成立。该结论需要在火狐上重新取得。
 
 ## 尚未声称完成
 
-- Agent B 的回顾面板、FastAPI、真实模型和任务轮询不属于本交付，`npm run dev:recap` 尚不可用。
+- **扩展在火狐真实知乎页面上的注入与恢复尚未验证**。`dev:firefox` 只证明火狐载入了扩展，未证明宠物按钮出现、Shadow DOM 注入成功或断点能跨刷新保留。这些需要人工在浏览器中确认。
 - 尚未在登录态真实知乎页面完成 5 篇文章、10 个断点的人工实测；DOM 选择器当前由语义属性、URL 和隔离 fixture 验证。
-- 未测试 Edge、图片延迟加载的真实像素误差、知乎多回答聚合页或折叠正文自动展开。
+- AMO unlisted 签名与 GitHub Releases 交付链条尚未跑通，需要外部账号与凭证。
+- P2 联调未开始：扩展尚未挂载 `packages/recap-ui` 的 `mountRecapPanel`，`apps/extension` 也不依赖该包。演示视频中的回顾流程依赖这一步。
+- 未测试图片延迟加载的真实像素误差、知乎多回答聚合页或折叠正文自动展开。
+- 火狐 `storage.local` 配额行为与 Chrome 的 10 MB 假设不同，计划书中的缓存预算需重新核对。
 - 当前 mascot 是原创临时图标，不宣称为知乎官方刘看山素材。

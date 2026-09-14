@@ -1,6 +1,7 @@
 import type { ReadingCheckpoint } from "@contracts/types";
 import type { ReadingSettings, RuntimeRequest, RuntimeResponse, StorageKey } from "../shared/runtime";
 import { checkpointStorageKey } from "../shared/runtime";
+import { browserApi } from "../shared/browser-api";
 import { ReadingError } from "../shared/errors";
 
 export interface ReadingStore {
@@ -12,21 +13,21 @@ export interface ReadingStore {
 }
 
 async function send<T>(request: RuntimeRequest): Promise<T> {
-  const response = (await chrome.runtime.sendMessage(request)) as RuntimeResponse<T>;
+  const response = (await browserApi.runtime.sendMessage(request)) as RuntimeResponse<T>;
   if (!response?.ok) {
     throw new ReadingError("NETWORK_ERROR", response?.error.message ?? "扩展后台没有响应");
   }
   return response.value as T;
 }
 
-export class ChromeReadingStore implements ReadingStore {
+export class ExtensionReadingStore implements ReadingStore {
   async getCheckpoint(contentKey: string, kind: ReadingCheckpoint["kind"]): Promise<ReadingCheckpoint | null> {
     const key = checkpointStorageKey({ contentKey, kind });
     return (await send<ReadingCheckpoint | null>({ type: "LKS_STORAGE_GET", key })) ?? null;
   }
 
   async saveCheckpoint(checkpoint: ReadingCheckpoint): Promise<{ ignored: boolean }> {
-    const response = (await chrome.runtime.sendMessage({
+    const response = (await browserApi.runtime.sendMessage({
       type: "LKS_SAVE_CHECKPOINT",
       checkpoint,
     } satisfies RuntimeRequest)) as RuntimeResponse;

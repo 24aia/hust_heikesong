@@ -3,7 +3,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { ReaderCompanion } from "../mascot/ReaderCompanion";
 import { companionStyles } from "../mascot/styles";
 import { ZhihuPageAdapter } from "../page-adapter/zhihu-page-adapter";
-import { ChromeReadingStore } from "../storage/storage";
+import { ExtensionReadingStore } from "../storage/storage";
 import { ReadingController } from "./controller";
 
 const HOST_ID = "liukanshan-reading-companion";
@@ -16,7 +16,7 @@ async function waitForController(attempts = 8): Promise<ReadingController | null
     try {
       const adapter = new ZhihuPageAdapter();
       const snapshot = adapter.extractSnapshot();
-      const next = new ReadingController(adapter, new ChromeReadingStore(), snapshot);
+      const next = new ReadingController(adapter, new ExtensionReadingStore(), snapshot);
       await next.initialize();
       return next;
     } catch {

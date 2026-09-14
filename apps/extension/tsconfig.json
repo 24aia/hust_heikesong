@@ -18,7 +18,7 @@
     "paths": {
       "@contracts/*": ["../../contracts/src/*"]
     },
-    "types": ["chrome", "node", "vitest/globals"]
+    "types": ["firefox-webext-browser", "node", "vitest/globals"]
   },
   "include": ["src", "tests", "vite.*.config.ts"]
 }

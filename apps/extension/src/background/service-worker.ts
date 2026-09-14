@@ -1,12 +1,13 @@
 import type { ReadingCheckpoint } from "@contracts/types";
 import type { ReadingSettings, RuntimeRequest, RuntimeResponse } from "../shared/runtime";
 import { checkpointStorageKey } from "../shared/runtime";
+import { browserApi } from "../shared/browser-api";
 
 const writeQueues = new Map<string, Promise<unknown>>();
 const supportedSender = /^https:\/\/(www\.zhihu\.com\/question\/[^/]+\/answer\/[^/?#]+|zhuanlan\.zhihu\.com\/p\/[^/?#]+)/;
 
-function isSenderAllowed(sender: chrome.runtime.MessageSender): boolean {
-  return sender.id === chrome.runtime.id && Boolean(sender.url && (supportedSender.test(sender.url) || sender.url.startsWith(chrome.runtime.getURL(""))));
+function isSenderAllowed(sender: browser.runtime.MessageSender): boolean {
+  return sender.id === browserApi.runtime.id && Boolean(sender.url && (supportedSender.test(sender.url) || sender.url.startsWith(browserApi.runtime.getURL(""))));
 }
 
 function isCheckpoint(value: unknown): value is ReadingCheckpoint {
@@ -39,9 +40,9 @@ async function saveCheckpoint(checkpoint: ReadingCheckpoint): Promise<RuntimeRes
   if (!isCheckpoint(checkpoint)) return { ok: false, error: { code: "INVALID_MESSAGE", message: "断点数据不完整" } };
   const key = checkpointStorageKey(checkpoint);
   return enqueue(key, async () => {
-    const existing = (await chrome.storage.local.get(key))[key] as ReadingCheckpoint | undefined;
+    const existing = (await browserApi.storage.local.get(key))[key] as ReadingCheckpoint | undefined;
     if (existing && existing.savedAt >= checkpoint.savedAt) return { ok: true, ignored: true };
-    await chrome.storage.local.set({ [key]: checkpoint });
+    await browserApi.storage.local.set({ [key]: checkpoint });
     return { ok: true, ignored: false };
   });
 }
@@ -49,7 +50,7 @@ async function saveCheckpoint(checkpoint: ReadingCheckpoint): Promise<RuntimeRes
 async function handle(request: RuntimeRequest): Promise<RuntimeResponse> {
   switch (request.type) {
     case "LKS_STORAGE_GET": {
-      const value = (await chrome.storage.local.get(request.key))[request.key] ?? null;
+      const value = (await browserApi.storage.local.get(request.key))[request.key] ?? null;
       return { ok: true, value };
     }
     case "LKS_SAVE_CHECKPOINT":
@@ -58,7 +59,7 @@ async function handle(request: RuntimeRequest): Promise<RuntimeResponse> {
       if (JSON.stringify(request.value).length > 500_000) {
         return { ok: false, error: { code: "QUOTA_EXCEEDED", message: "单份回顾缓存过大" } };
       }
-      await chrome.storage.local.set({ [request.key]: request.value });
+      await browserApi.storage.local.set({ [request.key]: request.value });
       return { ok: true };
     }
     case "LKS_SETTINGS_SET": {
@@ -66,16 +67,16 @@ async function handle(request: RuntimeRequest): Promise<RuntimeResponse> {
         enabled: Boolean(request.settings.enabled),
         mascotCollapsed: Boolean(request.settings.mascotCollapsed),
       };
-      await chrome.storage.local.set({ "reading:settings": settings });
+      await browserApi.storage.local.set({ "reading:settings": settings });
       return { ok: true };
     }
     case "LKS_STORAGE_REMOVE":
-      await chrome.storage.local.remove(request.key as string);
+      await browserApi.storage.local.remove(request.key as string);
       return { ok: true };
     case "LKS_CLEAR_READING": {
-      const values = await chrome.storage.local.get(null);
+      const values = await browserApi.storage.local.get(null);
       const keys = Object.keys(values).filter((key) => key.startsWith("reading:") || key.startsWith("recap-cache:"));
-      await chrome.storage.local.remove(keys);
+      await browserApi.storage.local.remove(keys);
       return { ok: true };
     }
     default:
@@ -83,7 +84,7 @@ async function handle(request: RuntimeRequest): Promise<RuntimeResponse> {
   }
 }
 
-chrome.runtime.onMessage.addListener((request: RuntimeRequest, sender, sendResponse) => {
+browserApi.runtime.onMessage.addListener((request: RuntimeRequest, sender, sendResponse) => {
   if (!isSenderAllowed(sender)) {
     sendResponse({ ok: false, error: { code: "FORBIDDEN", message: "消息来源不受支持" } } satisfies RuntimeResponse);
     return false;

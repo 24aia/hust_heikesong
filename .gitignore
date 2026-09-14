@@ -1,0 +1,30 @@
+# 依赖
+node_modules/
+
+# 构建产物：按计划由 npm run build:extension 生成，不提交
+dist/
+
+# 密钥与本地配置：任何真实凭证都不进仓库
+API-key/
+资料/知乎直答/API-key.md
+.env
+.env.*
+!.env.example
+
+# Python 后端本地环境
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# 本地任务数据库：可能含用户正文与任务 token，禁止提交
+*.db
+*.db-journal
+
+# 开发用独立 Chrome profile（默认在仓库外，这里兜底）
+chrome-dev-profile/
+
+# 编辑器与系统
+.DS_Store
+Thumbs.db

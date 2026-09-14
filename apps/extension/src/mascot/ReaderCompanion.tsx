@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { ReadingCheckpoint } from "@contracts/types";
 import type { ControllerState, ReadingController } from "../content/controller";
+import { browserApi } from "../shared/browser-api";
 
 function formatCheckpoint(checkpoint: ReadingCheckpoint | null): string {
   if (!checkpoint) return "暂无记录";
@@ -76,7 +77,7 @@ export function ReaderCompanion({ controller }: { controller: ReadingController 
         </section>
       )}
       <button className="mascot" type="button" aria-label="打开刘看山阅读伙伴" aria-expanded={state.open} onClick={() => controller.toggleOpen()}>
-        <img src={chrome.runtime.getURL("assets/mascot.svg")} alt="" />
+        <img src={browserApi.runtime.getURL("assets/mascot.svg")} alt="" />
       </button>
     </div>
   );
