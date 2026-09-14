@@ -35,23 +35,22 @@ FastAPI 使用 deterministic Mock Provider 时已实际通过：
 
 ## 真实知乎直答验收
 
-当前没有可用的知乎开放平台 Access Secret。用户已明确说明仓库外的现有
-`API-key` 是个人通用 API Key，不是知乎凭证；它不能用于知乎直答端点，后续
-不会读取、调用或接入该 Key。
+使用用户单独提供的知乎开放平台 Access Secret，向官方端点发送了一次原创、
+三段短文本，实际验收结果：
 
-此前曾按知乎 Bearer 格式发起一次原创短文本请求，服务端按预期拒绝了错误
-凭证类型；程序安全收敛为“模型服务鉴权失败”，没有输出响应体、密钥或提示词
-全文。这不构成真实模型成功验收。
+- `zhida-fast-1p5` 对当前凭证可用；
+- 非流式响应可以从 `choices[0].message.content` 读取；
+- 模型返回 3 个回顾要点；
+- JSON 可按 `RecapResult v1` 解析；
+- `inputHash` 和服务端 `summaryVersion` 校验通过；
+- 所有 evidence 的段落 ID 有效，quote 均在对应输入段落中逐字存在；
+- 验证进程约 16 秒完成，属于单次小样本，不代表稳定延迟指标。
 
-因此不能声称以下项目已经通过：
+密钥只注入验证进程，没有进入代码、测试输出、模型结果或 Git 提交。原有个人
+通用 API Key 与知乎凭证保持分离，没有用于本次调用。
 
-- 当前凭证具有直答权限；
-- `zhida-fast-1p5` 对当前租户可用；
-- 真实输出能稳定满足 JSON 和逐字引用约束；
-- 真实延迟和配额表现。
-
-取得有效的知乎开放平台 Access Secret 后，将其注入
-`ZHIHU_ACCESS_SECRET`，在 `apps/recap-api` 运行：
+再次验收时，将知乎 Access Secret 注入 `ZHIHU_ACCESS_SECRET`，在
+`apps/recap-api` 运行：
 
 ```powershell
 $env:RECAP_PROVIDER = "zhihu"
@@ -60,3 +59,6 @@ $env:ZHIHU_ACCESS_SECRET = "<仅在当前进程设置>"
 ```
 
 成功脚本只输出 schema 版本、要点数量和引用校验结果，不输出正文或密钥。
+
+当前仍未验证大量长文、连续多次请求、配额耗尽和不同模型档位；这些项目应在
+联调与人工语义验收阶段继续记录。

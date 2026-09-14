@@ -12,6 +12,8 @@
   SQLite 任务、限定队列、任务访问 token 哈希、限流、过期和重启中断语义。
 - Provider：deterministic Mock 与知乎直答非流式适配器；严格 JSON 解析、错误
   收敛和逐字引用校验。
+- 真实模型：`zhida-fast-1p5` 已用原创三段短文本成功生成 3 个要点，结构、
+  哈希和全部引用均通过校验。
 - 文档：B 端本地运行、部署与真实 API 核验记录。
 
 ## 实际检查
@@ -32,8 +34,6 @@ TypeScript 镜像。A 建立唯一契约源后，需要用其 type-only import �
 
 ## 未验证与阻塞
 
-- 当前只有个人通用 API Key，没有知乎开放平台 Access Secret；个人 Key 不会
-  接入知乎端点，真实模型成功路径尚未通过。详见 `docs/api-verification.md`。
 - A 尚未提供 ReadingHost、chrome.storage CacheStore、后台 RecapClient 和真实
   页面快照，因此 P2 浏览器联调不在 B 独立模块内完成。
 - 尚未进行公网 HTTPS 部署、真实浏览器扩展挂载、跨浏览器和人工语义质量验收。
